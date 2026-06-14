@@ -12,7 +12,7 @@ Built with OpenMaya API 2.0 + PySide6. The panel UI labels are in Chinese.
 
 - Generate a surface-hugging strip from a single edge loop (open or closed)
 - Real-time **width** and **normal offset** via sliders, with native undo/redo
-- Analytic **straight UVs** — world-proportional and tileable, no Unfold needed
+- Analytic **straight UVs** - world-proportional and tileable, no Unfold needed
 - Flip normals; one-click **finalize** (delete history + center pivot) for a clean static mesh
 - Native undo/redo through an API 2.0 `MPxCommand` command plugin
 - Frameless, dark-themed PySide6 tool window
@@ -21,32 +21,55 @@ Built with OpenMaya API 2.0 + PySide6. The panel UI labels are in Chinese.
 
 - Autodesk **Maya 2026.3** (Python 3.11, PySide6 / shiboken6)
 
-## Important: install on an ASCII-only path
+## Important: the install path must be ASCII-only
 
 Maya''s scripted-plugin loader fails to load a `.py` plugin when its file path contains
-**non-ASCII characters** (e.g. a Chinese folder name) on localized Windows
-(`UnicodeDecodeError ... invalid start byte`). Put this repo somewhere with an
-**ASCII-only path**, for example `C:\maya\trimsheet-plugin-maya2026` — not a path like
-`...\Maya<chinese>\...`.
+**non-ASCII characters** (e.g. a Chinese folder or user name) on localized Windows
+(`UnicodeDecodeError ... invalid start byte`). Make sure the full path to `trim_strip`
+contains only ASCII characters.
 
 ## Install
 
-1. Put the repo''s root folder on Maya''s `PYTHONPATH` (or drop the `trim_strip` package
-   into your Maya `scripts` directory).
-2. In the Maya Script Editor (Python tab):
+Pick one of the two options below, then run the shelf-button installer.
 
-   ```python
-   from trim_strip.install import install
-   install.install_shelf_button()
-   ```
+### Option A - drop into Maya''s user scripts folder (no PYTHONPATH editing)
 
-   This loads the command plugin (`ts_plugin.py`) and adds a **Trim** shelf button.
+Copy the `trim_strip` folder into your Maya user scripts directory:
+
+```
+C:\Users\<your-windows-username>\Documents\maya\2026\scripts\
+```
+
+That is `Documents\maya\2026\scripts` (the version-independent
+`...\Documents\maya\scripts\` also works for every Maya version). Maya adds this folder
+to its Python path at startup, so `import trim_strip` works with no `sys.path` editing.
+
+> If your Windows user name contains non-ASCII characters, this path is non-ASCII and the
+> plugin will not load - use **Option B** with an ASCII path such as `C:\maya\` instead.
+
+### Option B - point sys.path at any ASCII folder
+
+Extract anywhere with an ASCII path, then in the Maya Script Editor (Python):
+
+```python
+import sys
+sys.path.append(r"C:\maya\trimsheet-plugin-maya2026")  # the folder that CONTAINS trim_strip
+```
+
+### Then (either option) load the plugin + add the shelf button
+
+```python
+from trim_strip.install import install
+install.install_shelf_button()
+```
+
+This loads the command plugin (`ts_plugin.py`) and adds a **Trim** shelf button.
 
 ## Usage
 
 1. Double-click to select an edge loop in the viewport.
 2. Open the panel via the **Trim** shelf button.
-3. Click **从所选边线生成面片** (Generate from selected edges).
+3. Click **从所选边线生成面片** (generate from selected edges).
 4. Drag **宽度** (width) and **法线偏移** (normal offset) for live adjustment;
    tweak **UV 密度** (UV density); click **打直 UV** (straighten UVs).
 5. Optionally tick **翻转法线** (flip normals).
@@ -75,13 +98,6 @@ trim_strip/
 docs/            design spec + implementation plan
 ```
 
-## Architecture note
-
-Adjustments only move existing vertices (topology is fixed), so the tool caches a base
-"frame" `{P, N, W, arc-length}` per loop vertex on the strip transform and recomputes the
-`2 x N` rail points with pure vector math — millisecond-fast live editing without a custom
-DG node.
-
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
